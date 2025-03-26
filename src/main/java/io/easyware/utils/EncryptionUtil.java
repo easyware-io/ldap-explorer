@@ -1,16 +1,18 @@
-package com.bmwgroup.mtnext.mailer.utils;
+package io.easyware.utils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.UUID;
 
 public class EncryptionUtil {
 
     private static final String ALGORITHM = "AES";
 
-    public static String encrypt(String value, String encryptionKey) throws Exception {
-        SecretKeySpec keySpec = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+    public static String encrypt(String value, UUID encryptionKey) throws Exception {
+        String key = encryptionKey.toString().replace("-", "");
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), ALGORITHM);
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec);
 
@@ -18,8 +20,9 @@ public class EncryptionUtil {
         return Base64.getEncoder().encodeToString(encrypted);
     }
 
-    public static String decrypt(String encryptedValue, String encryptionKey) throws Exception {
-        SecretKeySpec keySpec = new SecretKeySpec(encryptionKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
+    public static String decrypt(String encryptedValue, UUID encryptionKey) throws Exception {
+        String key = encryptionKey.toString().replace("-", "");
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), ALGORITHM);
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, keySpec);
 

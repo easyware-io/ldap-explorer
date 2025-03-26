@@ -1,0 +1,109 @@
+<div design-flex-col [gap]="4">
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Card Title</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form design-flex-col class="mt-8" [formGroup]="form">
+        <div>
+          <mat-form-field class="w-full">
+            <mat-label>Connection name</mat-label>
+            <input matInput required formControlName="name" />
+          </mat-form-field>
+        </div>
+
+        <div design-flex-row [gap]="4">
+          <mat-form-field class="flex-1">
+            <mat-label>Host</mat-label>
+            <input matInput required formControlName="host" />
+          </mat-form-field>
+
+          <mat-form-field class="w-48">
+            <mat-label>Port</mat-label>
+            <input type="number" matInput required formControlName="port" />
+          </mat-form-field>
+        </div>
+
+        <div design-flex-row [gap]="4">
+          <mat-form-field class="flex-1">
+            <mat-label>Username</mat-label>
+            <input matInput required formControlName="securityPrincipal" />
+          </mat-form-field>
+
+          <mat-form-field class="flex-1">
+            <mat-label>Password</mat-label>
+            <input type="password" matInput required formControlName="securityCredentials" />
+          </mat-form-field>
+        </div>
+
+        <div design-flex-row [gap]="4">
+          <mat-form-field class="flex-1">
+            <mat-label>Search base</mat-label>
+            <input matInput required formControlName="searchBase" />
+          </mat-form-field>
+          <mat-form-field class="w-48">
+            <mat-label>Max page size</mat-label>
+            <input type="number" matInput formControlName="maxPageSize" />
+          </mat-form-field>
+        </div>
+
+        <div design-flex-row [gap]="4">
+          <mat-slide-toggle class="mt-3 flex-1" formControlName="active">Active</mat-slide-toggle>
+          <mat-slide-toggle class="mt-3 flex-1" formControlName="useSsl">Use SSL</mat-slide-toggle>
+          <mat-slide-toggle class="mt-3 flex-1" formControlName="useTls">Use TLS</mat-slide-toggle>
+          <mat-form-field>
+            <mat-label>SSL protocol</mat-label>
+            <mat-select formControlName="sslProtocol">
+              <mat-option value="TLS">TLS</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Timeout</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div design-flex-col>
+              <div design-flex-row>
+                <mat-form-field class="flex-1">
+                  <mat-label>Connect</mat-label>
+                  <input type="number" matInput formControlName="connectionTimeout" />
+                </mat-form-field>
+                <mat-form-field class="flex-1">
+                  <mat-label>Send</mat-label>
+                  <input type="number" matInput formControlName="sendTimeout" />
+                </mat-form-field>
+                <mat-form-field class="flex-1">
+                  <mat-label>Read</mat-label>
+                  <input type="number" matInput formControlName="readTimeout" />
+                </mat-form-field>
+                <mat-form-field class="flex-1">
+                  <mat-label>Write</mat-label>
+                  <input type="number" matInput formControlName="writeTimeout" />
+                </mat-form-field>
+                <mat-form-field class="flex-1">
+                  <mat-label>Close</mat-label>
+                  <input type="number" matInput formControlName="closeTimeout" />
+                </mat-form-field>
+              </div>
+              <div>0 means no timeout</div>
+            </div>
+          </mat-expansion-panel>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <div design-flex-row [pushToRight]="true" class="px-4">
+    <div class="flex-1">
+      <button mat-icon-button class="critical" aria-label="DELETE" (click)="delete()">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+    <div design-flex-row [fullWidth]="false">
+      <button mat-button (click)="cancel()">CANCEL</button>
+      <button mat-flat-button (click)="save()" [disabled]="form.pristine || form.invalid">SAVE</button>
+    </div>
+  </div>
+</div>

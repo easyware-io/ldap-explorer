@@ -1,0 +1,65 @@
+@use '@angular/material' as mat;
+@import 'tailwindcss';
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+h2 {
+  @apply text-2xl;
+}
+
+:root {
+  --positive-background-color: var(--color-green-600);
+  --positive-icon-color: var(--color-green-600);
+  --positive-text-color: var(--color-slate-50);
+
+  --critical-background-color: var(--color-red-600);
+  --critical-icon-color: var(--color-red-600);
+  --critical-text-color: var(--color-slate-50);
+}
+
+.positive {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--positive-background-color),
+      filled-label-text-color: var(--positive-text-color),
+    )
+  );
+  @include mat.fab-overrides(
+    (
+      container-color: var(--positive-background-color),
+      foreground-color: var(--positive-text-color),
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--positive-icon-color),
+    )
+  );
+}
+
+.critical {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--critical-background-color),
+      filled-label-text-color: var(--critical-text-color),
+    )
+  );
+  @include mat.fab-overrides(
+    (
+      container-color: var(--critical-background-color),
+      foreground-color: var(--critical-text-color),
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--critical-icon-color),
+    )
+  );
+}

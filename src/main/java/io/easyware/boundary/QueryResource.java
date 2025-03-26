@@ -1,11 +1,13 @@
-package com.bmwgroup.ldap.boundary;
+package io.easyware.boundary;
 
-import com.bmwgroup.ldap.config.ILdapConfig;
-import com.bmwgroup.ldap.entity.LdapQueryEntity;
-import com.bmwgroup.ldap.enums.LdapSystem;
-import com.bmwgroup.ldap.shared.LdapUtils;
-import com.bmwgroup.ldap.utils.exceptions.httpExceptions.BadRequestException;
+import io.easyware.control.LdapServerService;
+import io.easyware.entity.LdapQuerySettings;
+import io.easyware.entity.LdapServer;
+import io.easyware.utils.EncryptionUtil;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -13,6 +15,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.java.Log;
+import org.apache.directory.api.ldap.model.cursor.EntryCursor;
+import org.apache.directory.api.ldap.model.entry.Attribute;
+import org.apache.directory.api.ldap.model.entry.Entry;
+import org.apache.directory.api.ldap.model.exception.LdapException;
+import org.apache.directory.api.ldap.model.message.SearchScope;
+import org.apache.directory.ldap.client.api.LdapConnection;
+import org.apache.directory.ldap.client.api.LdapConnectionConfig;
+import org.apache.directory.ldap.client.api.LdapNetworkConnection;
+import org.apache.directory.ldap.client.api.NoVerificationTrustManager;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -20,52 +31,89 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import javax.naming.directory.SearchControls;
-import javax.naming.ldap.LdapContext;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
-@Log
-@Path("/v1/query")
+@Log(topic = "QueryResource")
+@Path("/query")
 @Tag(name = "Query")
-public class QueryResource extends BaseResource {
+public class QueryResource {
+
+    @Inject
+    LdapServerService ldapServerService;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Makes a pure LDAP query and return results as JSON")
     @APIResponses(value = {
-            @APIResponse(responseCode = "200", description = "User data retrieved successfully",
+            @APIResponse(responseCode = "200", description = "Data retrieved successfully",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonObject.class))),
             @APIResponse(responseCode = "400", description = "A bad request was made",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonObject.class))),
             @APIResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    public Response query(LdapQueryEntity queryEntity) {
-        ILdapConfig config = queryEntity.source == LdapSystem.AD ? adConfig : gdConfig;
+    public Response query(LdapQuerySettings settings) throws Exception {
+        if (settings == null ||
+                settings.ldapServerId == null ||
+                settings.ldapServerId.toString().length() != 36 ||
+                settings.query == null ||
+                settings.query.isEmpty()
+        ) throw new BadRequestException("Query settings are invalid");
 
-        if (queryEntity.query == null || queryEntity.query.isEmpty()) {
-            throw new BadRequestException("Query string is missing.");
+        LdapServer ldapServer = ldapServerService.getLdapServer(settings.ldapServerId);
+        if (ldapServer == null) throw new BadRequestException("LDAP server not found");
+
+        LdapConnection connection = getLdapConnection(ldapServer);
+
+        // Example LDAP query: (cn=John*)
+        EntryCursor cursor = connection.search(
+                ldapServer.getSearchBase(),
+                settings.query,
+                SearchScope.SUBTREE
+        );
+
+        JsonArray results = new JsonArray();
+        for (Entry entry : cursor) {
+            // Transform Entry into a JsonObject
+            Collection<Attribute> attributes = entry.getAttributes()
+                    .stream()
+                    .sorted(Comparator.comparing(Attribute::getId))
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            JsonObject ldapEntry = new JsonObject();
+            for (Attribute attribute : attributes) {
+                ldapEntry.put(attribute.getId(), attribute.getString());
+            }
+            results.add(ldapEntry);
         }
-        if (queryEntity.forceToArray == null) {
-            queryEntity.forceToArray = Set.of();
+
+        try {
+            connection.unBind();
+            connection.close();
+        } catch (Exception e) {
+            log.severe(e.getMessage());
         }
-        if (queryEntity.responseAttributes == null) {
-            queryEntity.responseAttributes = config.responseAttributes();
-        }
 
-        Properties contextProperties = LdapUtils.createLdapProperties(config);
-        log.fine("contextProperties created. Creating searchControls...");
+        return Response.ok().entity(results).build();
+    }
 
-        SearchControls searchControls = LdapUtils.setSearchControls(queryEntity.responseAttributes);
-        log.fine("searchControls created. Creating ldapContext...");
+    private static LdapConnection getLdapConnection(LdapServer ldapServer) throws Exception {
 
-        LdapContext ldapContext = LdapUtils.createLdapContext(contextProperties, config.maxPageSize());
-        log.fine("ldapContext created. Fetching data...");
+        LdapConnectionConfig config = new LdapConnectionConfig();
+        config.setUseSsl(ldapServer.getUseSsl());
+        config.setLdapHost(ldapServer.getHost());
+        config.setLdapPort(ldapServer.getPort());
+        config.setName(ldapServer.getSecurityPrincipal());
+        config.setCredentials(EncryptionUtil.decrypt(ldapServer.getSecurityCredentials(), ldapServer.getId()));
+        config.setTrustManagers( new NoVerificationTrustManager() );
 
-        List<JsonObject> res = LdapUtils.fetchData(queryEntity.query, searchControls, ldapContext, config.searchBase(), 1000, queryEntity.responseAttributes, queryEntity.forceToArray);
-        return Response.ok(res).build();
+        LdapConnection connection = new LdapNetworkConnection(config);
+        connection.bind(config.getName(), config.getCredentials());
+        return connection;
     }
 }

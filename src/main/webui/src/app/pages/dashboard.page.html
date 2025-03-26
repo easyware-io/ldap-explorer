@@ -1,0 +1,25 @@
+@if (ldapServers.value().length > 0) {
+<div class="w-full">
+  <mat-tab-group animationDuration="0ms" class="h-screen">
+    @for (server of ldapServers.value(); track server.id) {
+    <mat-tab [label]="server.name" class="pt-4 bg-amber-200">
+      <ldap-server-card [ldapServer]="server"></ldap-server-card>
+    </mat-tab>
+    }
+  </mat-tab-group>
+</div>
+} @else {
+<div class="flex w-screen h-screen">
+  <button mat-fab extended class="m-auto" (click)="create()">
+    <mat-icon>add</mat-icon>
+    Add your first LDAP Server
+  </button>
+</div>
+}
+
+<!-- Add button in lower right corner -->
+@if (ldapServers.value().length > 0) {
+<div class="absolute bottom-0 right-0 p-4 z-50">
+  <ldap-server-new></ldap-server-new>
+</div>
+}
