@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject, input, signal, Signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, Signal } from '@angular/core';
 import { API } from '@const/api';
 import { DesignModule } from '@directives/design/design.module';
 import { LdapQuery } from '@interfaces/ldap-query';
@@ -15,15 +15,21 @@ import { ToastService } from '@services/toast.service';
 export class LdapQueryResultsComponent {
   id = input.required<string>();
   queryId = input.required<string>();
+  lastUpdate = input.required<Date>();
 
   private readonly toast = inject(ToastService);
 
+  getResults = () => API.LDAP.QUERY.GET(this.queryId());
   ldapQuery = httpResource<LdapQuery>(() => API.LDAP.SERVER.QUERIES.GET(this.id(), this.queryId()));
-  ldapQueryResults = httpResource(() => API.LDAP.QUERY.GET(this.queryId()));
+  ldapQueryResults = httpResource(this.getResults);
   data: Signal<Record<string, string | string[] | number | Date>[]> = computed(() =>
     JSON.parse(JSON.stringify(this.ldapQueryResults.value() ?? []))
   );
-  selectedIndex: Signal<number> = signal(0);
+  selectedIndex: Signal<number> = linkedSignal(() => (this.data().length > 0 ? 0 : -1));
+  update = effect(() => {
+    this.lastUpdate();
+    this.ldapQueryResults.update(this.getResults);
+  });
 
   // Helper to get object keys
   objectKeys(): string[] {

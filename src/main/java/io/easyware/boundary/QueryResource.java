@@ -38,6 +38,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -126,6 +127,15 @@ public class QueryResource {
             results.add(ldapEntry);
         }
 
+        // Sort JsonArray
+        List<JsonObject> sortedList = results.stream()
+                .sorted(Comparator.comparing(o -> ((JsonObject) o).getString(ldapQuery.getKey())))
+                .map(o -> (JsonObject) o)
+                .toList();
+
+        JsonArray toReturn = new JsonArray();
+        sortedList.forEach(toReturn::add);
+
         try {
             connection.unBind();
             connection.close();
@@ -133,7 +143,7 @@ public class QueryResource {
             log.severe(e.getMessage());
         }
 
-        return Response.ok().entity(results).build();
+        return Response.ok().entity(toReturn).build();
     }
 
     private static LdapConnection getLdapConnection(LdapServer ldapServer) throws Exception {

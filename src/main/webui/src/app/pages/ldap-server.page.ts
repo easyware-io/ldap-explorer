@@ -49,6 +49,12 @@ export class LdapServerPage {
     const ldapQuery = ldapServer.queries?.find((ldapQuery) => ldapQuery.id.toLowerCase() == queryId?.toLowerCase());
     return ldapQuery ?? ({} as LdapQuery);
   });
+  lastUpdate = linkedSignal(() => {
+    this.ldapServer();
+    console.log('lastUpdate');
+
+    return new Date();
+  });
 
   selectedTabIndex = linkedSignal(() => {
     const id = this.id();
