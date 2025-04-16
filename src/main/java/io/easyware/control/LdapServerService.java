@@ -1,5 +1,6 @@
 package io.easyware.control;
 
+import io.easyware.entity.LdapQuery;
 import io.easyware.entity.LdapServer;
 import io.easyware.utils.EncryptionUtil;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -10,6 +11,7 @@ import jakarta.ws.rs.NotFoundException;
 import lombok.extern.java.Log;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Log
@@ -23,15 +25,10 @@ public class LdapServerService {
     public LdapServer createLdapServer(LdapServer ldapServer) throws Exception {
         entityManager.persist(ldapServer);
 
-        log.info("Created LDAP Server: " + ldapServer.getId());
-
         String encryptedPassword = EncryptionUtil.encrypt(ldapServer.getSecurityCredentials(), ldapServer.getId());
         ldapServer.setSecurityCredentials(encryptedPassword);
 
         entityManager.merge(ldapServer);
-
-        log.info("Encrypted LDAP Server Password: " + ldapServer.getSecurityCredentials());
-        log.info("Decrypted LDAP Server Password: " + EncryptionUtil.decrypt(ldapServer.getSecurityCredentials(), ldapServer.getId()));
 
         return ldapServer;
     }
@@ -104,7 +101,7 @@ public class LdapServerService {
     }
 
     public List<LdapServer> getLdapServers(String name, int start, int limit) {
-        return entityManager.createQuery("SELECT l FROM LdapServer l WHERE l.name LIKE :name", LdapServer.class)
+        return entityManager.createQuery("SELECT l FROM LdapServer l WHERE l.name LIKE :name ORDER BY l.name", LdapServer.class)
                 .setParameter("name", "%" + name + "%")
                 .setFirstResult(start)
                 .setMaxResults(limit)
@@ -122,5 +119,26 @@ public class LdapServerService {
     }
 
 
+    public List<LdapQuery> getLdapQueries(UUID id) {
+        LdapServer ldapServer = entityManager.find(LdapServer.class, id);
+        if (ldapServer == null) throw new NotFoundException();
+        return ldapServer.getQueries();
+    }
 
+    public Optional<LdapQuery> getLdapQuery(UUID id) {
+        LdapQuery ldapQuery = entityManager.find(LdapQuery.class, id);
+        if (ldapQuery == null) return Optional.empty();
+        return Optional.of(ldapQuery);
+    }
+
+    @Transactional
+    public LdapQuery createLdapQuery(LdapQuery ldapQuery) throws Exception {
+        LdapServer ldapServer = entityManager.find(LdapServer.class, ldapQuery.getLdapServerId());
+        if (ldapServer == null) throw new NotFoundException();
+
+        ldapQuery.setLdapServer(ldapServer);
+        ldapServer.getQueries().add(ldapQuery);
+        entityManager.merge(ldapServer);
+        return ldapQuery;
+    }
 }

@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  <div design-flex-col>
+    <mat-form-field class="w-full">
+      <mat-label>Name</mat-label>
+      <input matInput required [(ngModel)]="ldapQuery().name" />
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>Description</mat-label>
+      <input matInput [(ngModel)]="ldapQuery().description" />
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>Query</mat-label>
+      <textarea
+        matInput
+        required
+        placeholder="(&(objectClass=person)(cn=Joe))"
+        [(ngModel)]="ldapQuery().query"
+      ></textarea>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button color="primary" (click)="cancel()">CANCEL</button>
+  <button mat-flat-button color="primary" [mat-dialog-close]="ldapQuery()" cdkFocusInitial>SAVE</button>
+</mat-dialog-actions>

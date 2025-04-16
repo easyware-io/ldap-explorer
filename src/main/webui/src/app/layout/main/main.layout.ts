@@ -6,6 +6,6 @@ import { RouterModule } from '@angular/router';
   imports: [RouterModule],
   templateUrl: './main.layout.html',
   styles: ``,
-  host: { class: 'flex flex-col h-screen w-screen bg-gray-200 overflow-y-auto' },
+  host: { class: 'flex flex-col h-screen w-screen overflow-y-auto' },
 })
 export class MainLayout {}

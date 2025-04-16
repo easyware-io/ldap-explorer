@@ -1,9 +1,13 @@
 package io.easyware.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +17,8 @@ import lombok.Setter;
 import org.apache.directory.ldap.client.api.LdapConnectionConfig;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -100,6 +106,15 @@ public class LdapServer {
     @Column(name = "active", nullable = false)
     @Builder.Default
     private Boolean active = true;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "ldapServer", fetch = FetchType.EAGER)
+    @OrderBy("name ASC")
+    @Builder.Default
+    private List<LdapQuery> queries = new ArrayList<>();
+
+    @Column(name = "key", nullable = false, length = 64)
+    @Builder.Default
+    private String key = "distinguishedName";
 
     public LdapConnectionConfig toLdapConnectionConfig() {
         LdapConnectionConfig config = new LdapConnectionConfig();

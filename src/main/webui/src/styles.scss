@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@import 'tailwindcss';
+@use 'tailwindcss' as *;
 
 html,
 body {
@@ -15,6 +15,10 @@ h2 {
 }
 
 :root {
+  --primary-background-color: var(--color-sky-700);
+  --primary-icon-color: var(--color-sky-700);
+  --primary-text-color: var(--color-slate-50);
+
   --positive-background-color: var(--color-green-600);
   --positive-icon-color: var(--color-green-600);
   --positive-text-color: var(--color-slate-50);
@@ -22,6 +26,26 @@ h2 {
   --critical-background-color: var(--color-red-600);
   --critical-icon-color: var(--color-red-600);
   --critical-text-color: var(--color-slate-50);
+}
+
+.primary {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--primary-background-color),
+      filled-label-text-color: var(--primary-text-color),
+    )
+  );
+  @include mat.fab-overrides(
+    (
+      container-color: var(--primary-background-color),
+      foreground-color: var(--primary-text-color),
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--primary-icon-color),
+    )
+  );
 }
 
 .positive {

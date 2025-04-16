@@ -1,0 +1,39 @@
+<div design-flex-row>
+  <mat-form-field class="select-result">
+    <select matNativeControl required [(ngModel)]="selectedIndex">
+      @for (res of data(); track res; let i = $index) {
+      <option [value]="i">{{ value(res, ldapQuery.value()?.key ?? 'distinguishedName') }}</option>
+      }
+    </select>
+  </mat-form-field>
+
+  <div class="mt-4">{{ data().length }} result{{ data().length > 1 ? 's' : '' }}</div>
+  <div>{{ ldapQuery.value() | json }}</div>
+</div>
+
+<table class="query-results-table">
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (key of objectKeys(); track key) {
+    <tr>
+      <td>{{ key }}</td>
+      <td (dblclick)="copyToClipboard(value(data()[selectedIndex()], key))">
+        @if (isArray(data()[selectedIndex()], key)) {
+        <ul>
+          @for (item of valueFromArray(data()[selectedIndex()], key); track item) {
+          <li>{{ item }}</li>
+          }
+        </ul>
+        } @else {
+        {{ value(data()[selectedIndex()], key) }}
+        }
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>

@@ -1,0 +1,10 @@
+<div design-flex-col [gap]="0" [fullWidth]="false" class="w-64 h-screen overflow-y-auto py-4 bg-white">
+  @if (ldapServer() && (ldapServer()?.queries ?? []).length > 0) { @for (ldapQuery of (ldapServer()?.queries ?? []);
+  track ldapQuery.id) {
+  <ldap-query-menu-item
+    [ldapQuery]="ldapQuery"
+    [currentLdapServerId]="currentLdapServerId()"
+    [currentQueryId]="currentQueryId()"
+  ></ldap-query-menu-item>
+  } }
+</div>

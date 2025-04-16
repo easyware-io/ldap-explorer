@@ -1,12 +1,40 @@
-@if (ldapServers.value().length > 0) {
+<div class="flex w-screen h-screen overflow-y-auto px-20">
+  <div design-grid class="m-auto">
+    @for (server of ldapServers.value(); track $index) {
+    <ldap-server-card [ldapServer]="server"></ldap-server-card>
+    }
+  </div>
+</div>
+
+<!-- @if (ldapServers.value().length > 0) {
 <div class="w-full">
-  <mat-tab-group animationDuration="0ms" class="h-screen">
+  <mat-tab-group
+    animationDuration="0ms"
+    class="h-screen"
+    (selectedTabChange)="onTabChange($event)"
+    [selectedIndex]="selectedTabIndex()"
+  >
     @for (server of ldapServers.value(); track server.id) {
-    <mat-tab [label]="server.name" class="pt-4 bg-amber-200">
-      <ldap-server-card [ldapServer]="server"></ldap-server-card>
+    <mat-tab [label]="server.name" class="pt-4">
+      <!-- <ldap-server-card [ldapServer]="server"></ldap-server-card> -->
+
+<div class="h-[calc(100vh-50px)] overflow-y-auto">
+  <!-- <mat-sidenav-container>
+          <mat-sidenav #sidenav mode="side" opened [fixedInViewport]="true" [fixedTopGap]="50" [fixedBottomGap]="0">
+            <sidebar [ldapServer]="server"></sidebar>
+          </mat-sidenav>
+
+          <mat-sidenav-content>
+            <div class="h-[calc(100vh-50px)] bg-white overflow-y-auto">
+              <router-outlet></router-outlet>
+            </div>
+          </mat-sidenav-content>
+        </mat-sidenav-container>
+      </div>
     </mat-tab>
     }
   </mat-tab-group>
+  <router-outlet></router-outlet>
 </div>
 } @else {
 <div class="flex w-screen h-screen">
@@ -15,11 +43,14 @@
     Add your first LDAP Server
   </button>
 </div>
-}
+} -->
 
-<!-- Add button in lower right corner -->
-@if (ldapServers.value().length > 0) {
-<div class="absolute bottom-0 right-0 p-4 z-50">
-  <ldap-server-new></ldap-server-new>
+  <!-- Add button in lower right corner -->
+  @if (ldapServers.value().length > 0) {
+  <div design-flex-col [fullWidth]="false" class="absolute bottom-0 right-0 p-4 z-50">
+    <ldap-query-new [ldapServer]="ldapServer()!!"></ldap-query-new>
+    <ldap-server-edit [id]="id()"></ldap-server-edit>
+    <ldap-server-new></ldap-server-new>
+  </div>
+  }
 </div>
-}

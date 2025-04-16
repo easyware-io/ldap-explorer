@@ -21,5 +21,8 @@ CREATE TABLE IF NOT EXISTS ldap_server (
     trust_store BYTEA,
     trust_store_password VARCHAR(255),
     active BOOLEAN NOT NULL DEFAULT true,
+
+    key VARCHAR(64) NOT NULL,
+
     PRIMARY KEY (id)
 );

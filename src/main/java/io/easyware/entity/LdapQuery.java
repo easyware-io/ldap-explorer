@@ -50,6 +50,13 @@ public class LdapQuery {
     @Column(name = "query", nullable = false, length = Integer.MAX_VALUE)
     private String query;
 
+    @Column(name = "search_base", length = 256)
+    private String searchBase;
+
+    @Column(name = "key", nullable = false, length = 64)
+    @Builder.Default
+    private String key = "distinguishedName";
+
     public UUID getLdapServerId() {
         if (ldapServer != null) return ldapServer.getId();
         return ldapServerId;

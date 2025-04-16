@@ -1,0 +1,30 @@
+@use 'tailwindcss' as *;
+@use '@angular/material' as mat;
+
+.select-result {
+  @include mat.select-overrides(
+    (
+      panel-background-color: orange,
+      enabled-trigger-text-color: red,
+    )
+  );
+}
+
+.query-results-table {
+  @apply border border-gray-300;
+  @apply w-full;
+  @apply font-mono text-sm;
+
+  th,
+  td {
+    @apply border border-gray-300;
+    @apply p-1;
+    @apply align-top;
+  }
+
+  thead > tr > th {
+    @apply bg-gray-700;
+    @apply text-gray-100;
+    @apply text-left;
+  }
+}

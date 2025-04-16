@@ -40,9 +40,17 @@ export class LdapServerForm {
     closeTimeout: new FormControl(0),
   });
 
-  ldapServer = httpResource<LdapServer>(() => API.LDAP.SERVER.READ(this.id()), {
-    defaultValue: {} as LdapServer, // Ensures an empty value if no data is returned
-  });
+  ldapServer = httpResource<LdapServer>(
+    () => {
+      const currentId = this.id();
+      console.log('currentId', currentId);
+
+      return currentId ? API.LDAP.SERVER.READ(currentId) : undefined;
+    },
+    {
+      defaultValue: {} as LdapServer, // Fallback value while loading or if no data
+    }
+  );
 
   loadForm = effect(() => {
     this.ldapServer.value();

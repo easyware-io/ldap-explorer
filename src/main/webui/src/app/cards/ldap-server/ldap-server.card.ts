@@ -1,12 +1,11 @@
 import { Component, inject, input } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '@modules/material.module';
-import { LdapServerTopBarComponent } from 'src/app/components/ldap-server-top-bar/ldap-server-top-bar.component';
 import { LdapServer } from '../../interfaces/ldap-server';
 
 @Component({
   selector: 'ldap-server-card',
-  imports: [MaterialModule, LdapServerTopBarComponent],
+  imports: [MaterialModule, RouterModule],
   templateUrl: './ldap-server.card.html',
   styles: ``,
 })
@@ -15,15 +14,11 @@ export class LdapServerCard {
 
   private readonly router = inject(Router);
 
-  edit() {
-    this.router.navigate(['/ldap-servers', 'id', this.ldapServer().id]);
-  }
-
-  delete() {
-    console.log('Delete LDAP server');
+  settings() {
+    this.router.navigate(['ldap-servers', 'id', this.ldapServer().id, 'settings']);
   }
 
   connect() {
-    console.log('Connect to LDAP server');
+    this.router.navigate(['ldap-servers', 'id', this.ldapServer().id]);
   }
 }
